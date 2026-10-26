@@ -1,0 +1,437 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#f5f5ef">
+  <meta name="description" content="상식 5문제로 가볍게 지식을 채워 보세요. O와 X를 고르고, 해설과 함께 배우는 상식 OX 퀴즈입니다.">
+  <title>상식 OX 퀴즈</title>
+  <style>
+    /* 외부 폰트와 이미지 없이, 이 파일 하나로 화면을 구성합니다. */
+    :root {
+      color-scheme: light;
+      --page: #f5f5ef;
+      --paper: #ffffff;
+      --ink: #242b29;
+      --muted: #68736c;
+      --line: #e5e8df;
+      --green: #266346;
+      --green-light: #edf5ec;
+      --red: #a64b3e;
+      --red-light: #fcf0eb;
+      --lime: #d9ee9e;
+    }
+    * { box-sizing: border-box; }
+    [hidden] { display: none !important; }
+    body {
+      margin: 0;
+      min-width: 280px;
+      min-height: 100vh;
+      background: var(--page);
+      color: var(--ink);
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Malgun Gothic", "Apple SD Gothic Neo", sans-serif;
+      -webkit-font-smoothing: antialiased;
+      line-height: 1.6;
+      word-break: keep-all;
+    }
+    button { font: inherit; cursor: pointer; -webkit-tap-highlight-color: transparent; }
+    button:focus-visible, summary:focus-visible {
+      outline: 3px solid #517e24;
+      outline-offset: 5px;
+    }
+    .topbar {
+      max-width: 1080px;
+      margin: 0 auto;
+      padding: 27px 32px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      border-bottom: 1px solid #dfe3d7;
+    }
+    .brand { display: flex; align-items: center; gap: 11px; font-size: 17px; font-weight: 800; letter-spacing: -.6px; }
+    .brand-mark {
+      display: grid;
+      place-items: center;
+      width: 36px;
+      height: 36px;
+      border-radius: 11px;
+      background: var(--ink);
+      color: var(--lime);
+      font-weight: 800;
+      font-size: 13px;
+      letter-spacing: 1px;
+    }
+    .top-note { color: var(--muted); font-size: 13px; }
+    .top-note::before { content: ""; display: inline-block; width: 6px; height: 6px; margin: 0 8px 2px 0; border-radius: 50%; background: #5b8050; }
+    main { max-width: 744px; margin: 0 auto; padding: 49px 24px 30px; }
+    .intro { text-align: center; margin-bottom: 30px; }
+    .eyebrow { margin: 0 0 8px; color: var(--green); font-size: 13px; font-weight: 700; letter-spacing: .5px; }
+    h1 { margin: 0; font-size: clamp(32px, 6vw, 44px); line-height: 1.3; letter-spacing: -2px; font-weight: 800; }
+    h1 span { position: relative; display: inline-block; z-index: 0; }
+    h1 span::after { content: ""; position: absolute; z-index: -1; left: -2px; right: -2px; bottom: 3px; height: 12px; border-radius: 3px; background: var(--lime); transform: rotate(-3deg); }
+    .intro-copy { margin: 13px 0 16px; color: var(--muted); font-size: 15px; }
+    .meta { display: flex; justify-content: center; flex-wrap: wrap; gap: 8px 15px; color: #59635a; font-size: 12px; }
+    .meta span + span::before { content: "·"; margin-right: 15px; color: #8c9587; }
+    .quiz-card { background: var(--paper); border: 1px solid var(--line); border-radius: 24px; padding: 29px 34px 26px; box-shadow: 0 8px 36px #28331d06, 0 2px 4px #28331d03; }
+    .card-top { display: flex; justify-content: space-between; align-items: center; gap: 16px; }
+    .step { margin: 0; color: var(--muted); font-size: 13px; }
+    .step strong { font-size: 16px; color: var(--ink); margin-right: 3px; }
+    .live-score { margin: 0; padding: 5px 11px; border-radius: 8px; font-size: 12px; background: #f3f5ef; color: #536047; }
+    .live-score strong { color: var(--green); font-size: 14px; margin-left: 5px; }
+    .progress { display: flex; gap: 7px; margin: 17px 0 31px; }
+    .progress span { height: 5px; flex: 1; background: #eef0e8; border-radius: 5px; transition: background .2s; }
+    .progress span.current { background: #a6c673; }
+    .progress span.correct { background: var(--green); }
+    .progress span.wrong { background: #c88473; }
+    .question-meta { display: flex; align-items: center; gap: 9px; }
+    .q-number { font-size: 12px; color: var(--green); font-weight: 800; letter-spacing: .8px; }
+    .category { padding: 2px 9px; border: 1px solid var(--line); border-radius: 5px; color: var(--muted); font-size: 11px; }
+    h2 { margin: 16px 0 11px; min-height: 76px; font-size: clamp(22px, 4.4vw, 28px); font-weight: 750; line-height: 1.55; letter-spacing: -.9px; text-wrap: balance; }
+    h2:focus, #result-title:focus { outline: none; }
+    .question-hint { margin: 0; color: var(--muted); font-size: 13px; }
+    .answers { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin: 23px 0 18px; }
+    .answer {
+      position: relative;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-direction: column;
+      gap: 14px;
+      min-height: 153px;
+      padding: 22px 12px;
+      border: 1.5px solid transparent;
+      border-radius: 16px;
+      transition: transform .16s, border-color .16s, background .16s;
+    }
+    .answer-o { background: var(--green-light); color: var(--green); border-color: #d9e8d7; }
+    .answer-x { background: var(--red-light); color: var(--red); border-color: #f0ded5; }
+    .answer:not(:disabled):hover { transform: translateY(-3px); border-color: currentColor; }
+    .answer:not(:disabled):active { transform: translateY(0); }
+    .answer:disabled { cursor: default; opacity: 1; }
+    .answer.is-selected { border: 2px solid currentColor; }
+    .answer.is-muted { background: #f6f6f3; border-color: #e9eae4; color: #8c9389; }
+    .answer-label { font-size: 14px; font-weight: 700; }
+    .choice-mark { display: block; position: relative; width: 51px; height: 51px; }
+    .mark-o { border: 7px solid currentColor; border-radius: 50%; }
+    .mark-x::before, .mark-x::after { content: ""; position: absolute; width: 7px; height: 61px; top: -5px; left: 22px; border-radius: 5px; background: currentColor; transform: rotate(45deg); }
+    .mark-x::after { transform: rotate(-45deg); }
+    .selection-tag { position: absolute; top: 8px; right: 9px; font-size: 10px; font-weight: 700; }
+    .feedback { border-radius: 12px; padding: 17px 19px; background: var(--green-light); margin: 19px 0; border: 1px solid #dce8d7; }
+    .feedback.wrong { background: var(--red-light); border-color: #f0ded5; }
+    .feedback-title { margin: 0 0 5px; color: var(--green); font-size: 15px; font-weight: 750; }
+    .feedback.wrong .feedback-title { color: var(--red); }
+    .feedback-copy { margin: 0; color: #505c51; font-size: 13px; line-height: 1.8; }
+    .next-button, .restart-button { width: 100%; min-height: 51px; display: flex; align-items: center; justify-content: center; gap: 10px; border: 1px solid var(--ink); border-radius: 11px; background: var(--ink); color: white; font-size: 14px; font-weight: 700; }
+    .next-button:not(:disabled):hover, .restart-button:hover { background: #3b493b; }
+    .next-button:disabled { background: #f3f4ef; border-color: #e9ebe2; color: #838b7e; cursor: default; }
+    .arrow { font-size: 20px; line-height: 1; font-weight: 400; }
+    .card-footnote { text-align: center; margin: 15px 0 0; font-size: 11px; color: #78816f; }
+    .keyboard-note { text-align: center; margin: 19px 0 0; color: #737d6d; font-size: 11px; }
+    kbd { font: inherit; display: inline-block; border: 1px solid #d9ded1; border-bottom-width: 2px; border-radius: 4px; padding: 0 5px; margin: 0 2px; color: #5f6c55; background: #fafbf7; }
+    footer { padding: 25px 24px 29px; text-align: center; color: #7b8473; font-size: 11px; }
+    footer span { margin: 0 7px; color: #a6ae9f; }
+    .result { text-align: center; }
+    .result-badge { display: grid; place-items: center; width: 67px; height: 67px; border-radius: 50%; margin: 5px auto 20px; background: var(--lime); color: #3b5c23; }
+    .result-badge svg { width: 33px; height: 33px; }
+    .result .eyebrow { font-size: 12px; }
+    .result h2 { min-height: 0; margin: 10px 0 7px; font-size: 27px; }
+    .result-message { color: var(--muted); font-size: 14px; margin: 0; }
+    .score-number { color: var(--green); font-size: 70px; line-height: 1.2; font-weight: 800; letter-spacing: -4px; margin: 24px 0 8px; }
+    .score-number span { font-size: 22px; letter-spacing: -1px; margin-left: 4px; }
+    .score-caption { font-size: 13px; color: var(--muted); margin: 0 0 24px; }
+    .result-stats { display: grid; grid-template-columns: 1fr 1fr; border-radius: 13px; background: #f6f7f2; padding: 17px 0; margin-bottom: 23px; }
+    .result-stats div + div { border-left: 1px solid #dfe4d7; }
+    .result-stats dt { color: var(--muted); font-size: 12px; }
+    .result-stats dd { margin: 4px 0 0; font-size: 21px; font-weight: 750; }
+    .result-stats dd span { font-weight: 400; color: var(--muted); font-size: 13px; }
+    .review { text-align: left; border-top: 1px solid var(--line); margin: 23px 0 0; padding-top: 15px; }
+    .review summary { cursor: pointer; font-weight: 650; font-size: 13px; padding: 7px 0; }
+    .review ol { margin: 15px 0 0; padding: 0; list-style: none; }
+    .review li { padding: 14px 0; border-top: 1px solid var(--line); }
+    .review li strong { font-size: 13px; display: block; margin-bottom: 5px; }
+    .review li p { font-size: 12px; color: var(--muted); margin: 5px 0 0; }
+    .review-status { font-size: 11px; font-weight: 700; color: var(--green); }
+    .review-status.wrong { color: var(--red); }
+    noscript p { margin: 20px; padding: 20px; background: #fcf0eb; border-radius: 12px; text-align: center; }
+    @media (max-width: 560px) {
+      .topbar { padding: 19px 22px; }
+      .brand { font-size: 15px; }
+      .top-note { font-size: 11px; }
+      main { padding: 32px 16px 18px; }
+      .intro { margin-bottom: 24px; }
+      .eyebrow { font-size: 11px; }
+      .intro-copy { font-size: 13px; }
+      .meta { font-size: 11px; gap: 7px 10px; }
+      .meta span + span::before { margin-right: 10px; }
+      .quiz-card { border-radius: 19px; padding: 22px 22px 21px; }
+      .progress { margin-bottom: 26px; }
+      h2 { min-height: 75px; margin-top: 15px; }
+      .answers { gap: 12px; margin-top: 21px; }
+      .answer { min-height: 139px; gap: 15px; }
+      .choice-mark { transform: scale(.9); }
+      .keyboard-note { display: none; }
+      footer { padding-top: 18px; }
+    }
+    @media (max-width: 340px) {
+      .top-note { display: none; }
+      .quiz-card { padding: 20px 16px; }
+      .intro-copy { font-size: 12px; }
+      .feedback { padding: 14px; }
+    }
+    @media (prefers-reduced-motion: reduce) { *, *::before, *::after { transition: none !important; } }
+  </style>
+</head>
+<body>
+  <header class="topbar">
+    <div class="brand"><span class="brand-mark" aria-hidden="true">OX</span>상식 OX 퀴즈</div>
+    <span class="top-note">작은 도전, 새로운 발견</span>
+  </header>
+
+  <main>
+    <div class="intro">
+      <p class="eyebrow">지식 충전, 1분이면 충분해요</p>
+      <h1>상식 <span>OX</span> 퀴즈</h1>
+      <p class="intro-copy">알고 있던 상식, 얼마나 맞힐 수 있을까요?</p>
+      <div class="meta" aria-label="퀴즈 안내">
+        <span>총 5문제</span><span>문항당 20점</span><span>시간 제한 없음</span>
+      </div>
+    </div>
+
+    <section class="quiz-card" aria-label="OX 퀴즈">
+      <div id="quiz-screen">
+        <div class="card-top">
+          <p class="step"><strong id="step-number">01</strong> / 05 문제</p>
+          <p class="live-score">현재 점수<strong id="current-score">0점</strong></p>
+        </div>
+        <div id="progress" class="progress" role="progressbar" aria-label="답변한 문제" aria-valuemin="0" aria-valuemax="5" aria-valuenow="0">
+          <span class="current"></span><span></span><span></span><span></span><span></span>
+        </div>
+        <div class="question-meta"><span id="question-number" class="q-number">Q.01</span><span id="category" class="category">과학</span></div>
+        <h2 id="question" tabindex="-1">소리는 진공 상태에서도 전달될 수 있다.</h2>
+        <p class="question-hint">맞으면 O, 틀리면 X를 선택해 주세요.</p>
+
+        <div class="answers" role="group" aria-labelledby="question">
+          <button class="answer answer-o" id="answer-o" type="button" aria-label="O, 맞아요" aria-pressed="false">
+            <span class="choice-mark mark-o" aria-hidden="true"></span>
+            <span class="answer-label">맞아요</span>
+            <span class="selection-tag" hidden>내 선택</span>
+          </button>
+          <button class="answer answer-x" id="answer-x" type="button" aria-label="X, 아니에요" aria-pressed="false">
+            <span class="choice-mark mark-x" aria-hidden="true"></span>
+            <span class="answer-label">아니에요</span>
+            <span class="selection-tag" hidden>내 선택</span>
+          </button>
+        </div>
+
+        <div id="feedback" class="feedback" role="status" aria-live="polite" aria-atomic="true" hidden>
+          <p id="feedback-title" class="feedback-title"></p>
+          <p id="feedback-copy" class="feedback-copy"></p>
+        </div>
+        <button id="next" class="next-button" type="button" disabled><span id="next-label">다음 문제</span><span class="arrow" aria-hidden="true">→</span></button>
+        <p id="card-footnote" class="card-footnote">정답을 선택하면 해설을 확인할 수 있어요.</p>
+      </div>
+
+      <div id="result-screen" class="result" hidden>
+        <div class="result-badge" aria-hidden="true">
+          <svg viewBox="0 0 32 32" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M10 5h12v9a6 6 0 0 1-12 0V5Z"/><path d="M10 8H6v3a5 5 0 0 0 5 5M22 8h4v3a5 5 0 0 1-5 5M16 20v5m-5 2h10M12 25h8"/></svg>
+        </div>
+        <p class="eyebrow">5문제 모두 완료!</p>
+        <h2 id="result-title" tabindex="-1">오늘의 지식 충전 완료</h2>
+        <p id="result-message" class="result-message"></p>
+        <p class="score-number" aria-label="총점"><strong id="final-score">0</strong><span>점</span></p>
+        <p class="score-caption">100점 만점</p>
+        <dl class="result-stats">
+          <div><dt>맞힌 문제</dt><dd><strong id="correct-count">0</strong><span> / 5개</span></dd></div>
+          <div><dt>정답률</dt><dd><strong id="accuracy">0</strong><span>%</span></dd></div>
+        </dl>
+        <button id="restart" class="restart-button" type="button"><span aria-hidden="true">↻</span>다시 시작하기</button>
+        <details id="review" class="review">
+          <summary>정답과 해설 다시 보기</summary>
+          <ol id="review-list"></ol>
+        </details>
+      </div>
+    </section>
+    <p class="keyboard-note">키보드로도 풀어 보세요. <kbd>O</kbd> 또는 <kbd>X</kbd> 선택 <span aria-hidden="true">·</span> <kbd>Enter</kbd> 다음 문제</p>
+  </main>
+  <footer>호기심이 상식이 되는 시간<span aria-hidden="true">/</span>상식 OX 퀴즈</footer>
+  <noscript><p>퀴즈를 실행하려면 브라우저 설정에서 JavaScript를 켜 주세요.</p></noscript>
+
+  <script>
+    'use strict';
+
+    // 문제를 바꾸고 싶다면 이 배열의 문장, 정답(true=O, false=X), 해설을 수정하세요.
+    const questions = [
+      {
+        category: '과학',
+        text: '소리는 진공 상태에서도 전달될 수 있다.',
+        answer: false,
+        explanation: '소리는 공기나 물처럼 진동을 전달할 물질이 필요해요. 물질이 없는 진공 상태에서는 소리가 전달되지 않아요.'
+      },
+      {
+        category: '동물',
+        text: '문어의 심장은 세 개다.',
+        answer: true,
+        explanation: '문어에게는 몸 전체로 혈액을 보내는 심장 하나와, 두 아가미로 혈액을 보내는 심장 두 개가 있어요.'
+      },
+      {
+        category: '역사',
+        text: '한글을 창제한 왕은 세종대왕이다.',
+        answer: true,
+        explanation: '세종대왕은 백성이 쉽게 읽고 쓸 수 있도록 훈민정음을 창제했어요. 1443년에 완성하고 1446년에 반포했어요.'
+      },
+      {
+        category: '우주',
+        text: '태양계에서 가장 큰 행성은 지구다.',
+        answer: false,
+        explanation: '태양계에서 가장 큰 행성은 목성이에요. 목성의 지름은 지구 지름의 약 11배나 돼요.'
+      },
+      {
+        category: '생활',
+        text: '1킬로미터(km)는 1,000미터(m)다.',
+        answer: true,
+        explanation: '킬로(k)는 1,000배를 뜻하는 단위 접두어예요. 그래서 1킬로미터는 1,000미터와 같아요.'
+      }
+    ];
+
+    const POINTS_PER_QUESTION = 20;
+    const get = (id) => document.getElementById(id);
+    const answerButtons = [get('answer-o'), get('answer-x')];
+    const progressSegments = Array.from(get('progress').children);
+    let questionIndex = 0;
+    let answers = [];
+    let finished = false;
+
+    function correctCount() {
+      return answers.filter((answer, index) => answer === questions[index].answer).length;
+    }
+
+    function updateProgress() {
+      get('progress').setAttribute('aria-valuenow', String(answers.length));
+      get('progress').setAttribute('aria-valuetext', `총 ${questions.length}문제 중 ${answers.length}문제 답변 완료`);
+      progressSegments.forEach((segment, index) => {
+        segment.className = index < answers.length
+          ? (answers[index] === questions[index].answer ? 'correct' : 'wrong')
+          : (index === questionIndex ? 'current' : '');
+      });
+    }
+
+    function showQuestion(moveFocus = true) {
+      const question = questions[questionIndex];
+      const number = String(questionIndex + 1).padStart(2, '0');
+      get('quiz-screen').hidden = false;
+      get('result-screen').hidden = true;
+      get('step-number').textContent = number;
+      get('question-number').textContent = `Q.${number}`;
+      get('category').textContent = question.category;
+      get('question').textContent = question.text;
+      get('current-score').textContent = `${correctCount() * POINTS_PER_QUESTION}점`;
+      get('feedback').hidden = true;
+      get('feedback-title').textContent = '';
+      get('feedback-copy').textContent = '';
+      get('next').disabled = true;
+      get('next-label').textContent = questionIndex === questions.length - 1 ? '결과 보기' : '다음 문제';
+      get('card-footnote').textContent = '정답을 선택하면 해설을 확인할 수 있어요.';
+      answerButtons.forEach((button) => {
+        button.disabled = false;
+        button.classList.remove('is-selected', 'is-muted');
+        button.setAttribute('aria-pressed', 'false');
+        button.querySelector('.selection-tag').hidden = true;
+      });
+      updateProgress();
+      if (moveFocus) get('question').focus({ preventScroll: true });
+    }
+
+    function chooseAnswer(choice) {
+      // 중복 클릭이나 키 반복 입력으로 점수가 두 번 더해지지 않게 합니다.
+      if (finished || answers.length > questionIndex) return;
+      const question = questions[questionIndex];
+      const correct = choice === question.answer;
+      answers.push(choice);
+      answerButtons.forEach((button, index) => {
+        const selected = choice === (index === 0);
+        button.disabled = true;
+        button.classList.toggle('is-selected', selected);
+        button.classList.toggle('is-muted', !selected);
+        button.setAttribute('aria-pressed', String(selected));
+        button.querySelector('.selection-tag').hidden = !selected;
+      });
+      get('feedback').classList.toggle('wrong', !correct);
+      get('feedback-title').textContent = correct
+        ? `정답이에요! 정답은 ${question.answer ? 'O' : 'X'} · +${POINTS_PER_QUESTION}점`
+        : `아쉬워요! 정답은 ${question.answer ? 'O' : 'X'}예요.`;
+      get('feedback-copy').textContent = question.explanation;
+      get('feedback').hidden = false;
+      get('current-score').textContent = `${correctCount() * POINTS_PER_QUESTION}점`;
+      get('next').disabled = false;
+      get('card-footnote').textContent = '해설을 읽었다면 다음으로 넘어가세요.';
+      updateProgress();
+      // 버튼을 비활성화한 뒤 다음 이동 버튼으로 키보드 초점을 옮깁니다.
+      get('next').focus({ preventScroll: true });
+    }
+
+    function showResult() {
+      finished = true;
+      const count = correctCount();
+      get('quiz-screen').hidden = true;
+      get('result-screen').hidden = false;
+      get('final-score').textContent = String(count * POINTS_PER_QUESTION);
+      get('correct-count').textContent = String(count);
+      get('accuracy').textContent = String(Math.round(count / questions.length * 100));
+      get('result-title').textContent = count === questions.length ? '완벽해요, 상식 마스터!' : '오늘의 지식 충전 완료';
+      get('result-message').textContent = count === questions.length
+        ? '다섯 문제 모두 정답! 멋진 실력이에요.'
+        : count >= 3 ? '잘했어요! 해설과 함께 상식을 더 넓혀 보세요.' : '새롭게 알게 된 상식, 다음에는 기억할 수 있어요.';
+      get('review').open = false;
+      get('review-list').replaceChildren();
+      questions.forEach((question, index) => {
+        const item = document.createElement('li');
+        const title = document.createElement('strong');
+        const status = document.createElement('span');
+        const explanation = document.createElement('p');
+        const correct = answers[index] === question.answer;
+        title.textContent = `${index + 1}. ${question.text}`;
+        status.className = `review-status${correct ? '' : ' wrong'}`;
+        status.textContent = `${correct ? '정답' : '오답'} · 내 선택 ${answers[index] ? 'O' : 'X'} · 정답 ${question.answer ? 'O' : 'X'}`;
+        explanation.textContent = question.explanation;
+        item.append(title, status, explanation);
+        get('review-list').append(item);
+      });
+      get('result-title').focus({ preventScroll: true });
+      window.scrollTo({ top: 0, behavior: 'instant' });
+    }
+
+    function nextQuestion() {
+      if (finished || answers.length <= questionIndex) return;
+      if (questionIndex === questions.length - 1) showResult();
+      else {
+        questionIndex += 1;
+        showQuestion();
+      }
+    }
+
+    answerButtons[0].addEventListener('click', () => chooseAnswer(true));
+    answerButtons[1].addEventListener('click', () => chooseAnswer(false));
+    get('next').addEventListener('click', nextQuestion);
+    get('restart').addEventListener('click', () => {
+      questionIndex = 0;
+      answers = [];
+      finished = false;
+      showQuestion();
+      window.scrollTo({ top: 0, behavior: 'instant' });
+    });
+    document.addEventListener('keydown', (event) => {
+      if (event.repeat || event.altKey || event.ctrlKey || event.metaKey || finished) return;
+      if (event.key.toLowerCase() === 'o' || event.key.toLowerCase() === 'x') {
+        event.preventDefault();
+        chooseAnswer(event.key.toLowerCase() === 'o');
+      } else if (event.key === 'Enter') {
+        // 초점이 버튼에 있으면 브라우저의 기본 클릭 동작을 사용합니다.
+        if (document.activeElement instanceof HTMLButtonElement) return;
+        event.preventDefault();
+        nextQuestion();
+      }
+    });
+    showQuestion(false);
+  </script>
+</body>
+</html>
